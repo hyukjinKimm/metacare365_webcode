@@ -28,7 +28,7 @@ const pool = mysql.createPool({
 app.get('/', async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    const [rows] = await connection.execute("SELECT * FROM notice ORDER BY created_at DESC");  // 최신 공지사항 순으로 정렬
+    const [rows] = await connection.execute("SELECT * FROM notices ORDER BY created_at DESC");  // 최신 공지사항 순으로 정렬
     connection.release();
 
     res.status(200).json(rows);  // 공지사항 목록을 반환
