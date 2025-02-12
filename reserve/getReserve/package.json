@@ -1,0 +1,20 @@
+{
+  "name": "hospital-reservation-system",
+  "version": "1.0.0",
+  "description": "병원 예약 시스템의 MSA 백엔드 서버",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.1",
+    "mysql2": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

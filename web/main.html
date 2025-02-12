@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병원 예약 시스템</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: flex-start;
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .appointment-form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            height: auto;
+        }
+
+        .appointment-form h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 로딩 스피너 스타일 */
+        #loading-spinner {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #007bff;
+        }
+
+        /* 로딩 애니메이션 */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 나의 예약 현황 스타일 */
+        .appointment-status {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
+            width: 350px;
+            height: auto;
+        }
+
+        .appointment-status h2 {
+            font-size: 20px;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        #appointment-list {
+            margin-top: 10px;
+        }
+
+        #appointment-list p {
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>병원 예약 시스템</h1>
+
+    <div class="container">
+        <!-- 예약 폼 영역 -->
+        <div class="appointment-form">
+            <h2>예약 폼</h2>
+            <form id="appointment-form">
+                <label for="doctor">의사 선택:</label>
+                <select id="doctor" required>
+                    <option value="김철수">김철수 (내과)</option>
+                    <option value="이영희">이영희 (소아과)</option>
+                    <option value="박민준">박민준 (정형외과)</option>
+                    <option value="정다은">정다은 (피부과)</option>
+                    <option value="최지훈">최지훈 (신경외과)</option>
+                    <option value="한가을">한가을 (이비인후과)</option>
+                    <option value="송민서">송민서 (안과)</option>
+                    <option value="유진우">유진우 (비뇨기과)</option>
+                    <option value="배수진">배수진 (산부인과)</option>
+                    <option value="오상우">오상우 (치과)</option>
+                </select>
+
+                <label for="appointment-time">예약 날짜 및 시간:</label>
+                <input type="datetime-local" id="appointment-time" required>
+
+                <label for="description">요청 사항:</label>
+                <textarea id="description" placeholder="증상을 입력하세요" required></textarea>
+
+                <button id="submit-button" type="submit">예약 제출</button>
+                <div id="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>🔄 예약 처리 중...</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- 나의 예약 현황 영역 -->
+        <div class="appointment-status">
+            <h2>나의 예약 현황</h2>
+            <div id="appointment-list">
+                <p>예약된 항목이 없습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("appointment-form");
+            const submitButton = document.getElementById("submit-button");
+            const loadingSpinner = document.getElementById("loading-spinner");
+            const appointmentList = document.getElementById("appointment-list");
+
+            // URL에서 userId 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get("userId");
+
+            if (!patientId) {
+                alert("로그인이 필요합니다.");
+                window.location.href = "/login.html"; // 로그인 페이지로 리디렉션
+                return;
+            }
+
+            // 예약 목록 조회
+            async function fetchAppointments() {
+                try {
+                    const response = await fetch(`http://13.208.122.20//getreserve?patientId=${patientId}`);
+                    const data = await response.json();
+                    console.log(data)
+                    if (data && data.length > 0) {
+                        // 예약이 있으면 목록을 표시
+                        const listItems = data.map(appointment => {
+                            return `<div class="appointment-item">
+                                <p><strong>의사:</strong> ${appointment.doctor_id}</p>
+                                <p><strong>예약 시간:</strong> ${new Date(appointment.appointment_time).toLocaleString()}</p>
+                            </div>`;
+                        }).join('');
+                        appointmentList.innerHTML = listItems;
+                    } else {
+                        appointmentList.innerHTML = "<p>예약된 항목이 없습니다.</p>";
+                    }
+                } catch (error) {
+                    console.error("예약 정보 로드 중 오류 발생:", error);
+                    appointmentList.innerHTML = "<p>예약 정보를 불러오는 데 실패했습니다.</p>";
+                }
+            }
+
+            fetchAppointments();  // 페이지 로드 시 예약 현황 불러오기
+
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const doctorId = document.getElementById("doctor").value;
+                const appointmentTime = document.getElementById("appointment-time").value;
+                const description = document.getElementById("description").value;
+
+                if (!appointmentTime || !description) {
+                    alert("모든 필드를 입력해주세요.");
+                    return;
+                }
+
+                // JSON 데이터 생성
+                const requestData = {
+                    doctorId: doctorId,
+                    patientId: patientId,
+                    appointmentTime: new Date(appointmentTime).toISOString(),
+                    description: description
+                };
+
+                console.log("전송할 데이터:", requestData);
+
+                // 버튼 비활성화 + 로딩 표시
+                submitButton.disabled = true;
+                loadingSpinner.style.display = "block";
+
+                try {
+                    const response = await fetch("http://13.208.122.20//reserve", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    const responseData = await response.json();
+
+                    if (response.ok) {
+                        alert("예약이 완료되었습니다.");
+                        window.location.reload(); // 현재 페이지 새로고침
+                    } else {
+                        alert(`예약 실패: ${responseData.message || "서버 오류"}`);
+                    }
+                } catch (error) {
+                    console.error("오류 발생:", error);
+                    alert("네트워크 오류가 발생했습니다.");
+                } finally {
+                    // 버튼 활성화 + 로딩 숨김
+                    submitButton.disabled = false;
+                    loadingSpinner.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

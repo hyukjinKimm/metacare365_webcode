@@ -1,0 +1,19 @@
+{
+    "name": "hospital-signup",
+    "version": "1.0.0",
+    "description": "병원 회원가입 시스템",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "bcrypt": "^5.1.0",
+        "body-parser": "^1.20.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.18.2",
+        "mysql2": "^3.2.0"
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "name": "azure-service-bus-app",
+    "version": "1.0.0",
+    "description": "Azure Service Bus 기반의 예약 시스템",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "@azure/arm-servicebus": "^6.1.0",
+        "@azure/identity": "^4.6.0",
+        "@azure/service-bus": "^7.9.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.18.2",
+        "uuid": "^9.0.1"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "author": "Your Name",
+    "license": "MIT"
+}
