@@ -23,7 +23,7 @@ app.post('/', async (req, res) => {
 
   try {
     // 특정 IP의 /login 엔드포인트로 요청
-    const response = await axios.post(`http://${process.env.ON_PREMISE_IP}/login`, {
+    const response = await axios.post(`http://${process.env.ON_PREMISE_IP}:3000/login`, {
       email,
       password
     });
