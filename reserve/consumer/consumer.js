@@ -49,7 +49,7 @@ async function processReservations() {
         const jsonObject = JSON.parse(message.body);
 
         const { doctorId, patientId, appointmentTime, description } = jsonObject;
-        // 예약 가능 여부 확인
+
         const isAvailable = await checkAvailability(doctorId, appointmentTime);
 
         if (isAvailable) {
